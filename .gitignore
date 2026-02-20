@@ -1,0 +1,123 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# MacOS
+.DS_Store
+
+# AWS
+*.pem
+*.key
+.aws/
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Build artifacts
+*.zip
+*.tar.gz
+
+# Lambda deployment artifacts
+response.json
+lambda-response.json
+*.lambda
+
+# ECR/AWS deployment
+.lambda-endpoint
+trust-policy.json
+s3-policy.json
+mcp-servers-config.json
+
+# Serverless Framework
+.serverless/
+.serverless
+
+# Test files
+test-*.sh
+*test*.py
+test/
+tests/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# IDE
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Node modules (if any JavaScript)
+node_modules/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Custom scripts (user-specific)
+my-*.sh
+local-*.sh

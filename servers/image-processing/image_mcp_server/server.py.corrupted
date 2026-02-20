@@ -1,0 +1,60 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from image_manager import ImageManager
+import json, traceback, os
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+image_manager = None
+MCP_VERSION = "2024-11-05"
+SERVER_INFO = {"name": "image-processing-mcp-server", "version": "0.1.0"}
+
+TOOLS = [{"name": "resize_image", "description": "Resize user uploaded image", "inputSchema": {"type": "object", "properties": {"image_data": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["image_data", "width", "height"]}}, {"name": "rotate_image", "description": "Rotate user uploaded image", "inputSchema": {"type": "object", "properties": {"image_data": {"type": "string"}, "degrees": {"type": "number"}}, "required": ["image_data", "degrees"]}}]
+
+def handle_tools_list(params):
+    return {"tools": TOOLS}
+
+def handle_initialize(params):
+    return {"protocolVersion": MCP_VERSION, "capabilities": {"tools": {}}, "serverInfo": SERVER_INFO}
+
+def handle_tools_call(params):
+    tool_name = params.get("name")
+    args = params.get("arguments", {})
+    try:
+        if tool_name == "resize_image":
+            result = image_manager.resize_image(args.get("image_data"), args.get("width"), args.get("height"))
+        elif tool_name == "rotate_image":
+            result = image_manager.rotate_image(args.get("image_data"), args.get("degrees"))
+        else:
+            return {"content": [{"type": "text", "text": f"Unknown tool: {tool_name}"}], "isError": True}
+        
+        if result.get("success"):
+            content = [{"type": "text", "text": result.get("output", "")}]
+            if result.get("image_base64"):
+                content.append({"type": "image", "data": result["image_base64"], "mimeType": "image/png"})
+            if result.get("s3_upload"):
+                content.append({"type": "text", "text": f"\\n{result['s3_upload']['presigned_url']}"})
+            return {"content": content, "isError": False}
+        else:
+            return {"content": [{"type": "text", "text": result.get("error")}], "isError": True}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error: {str(e)}"}], "isError": True}
+
+@app.route("/", methods=["POST"])
+def handle_request():
+    data = request.get_json()
+    method = data.get("method")
+    if method == "initialize":
+        result = handle_initialize(data.get("params", {}))
+    elif method == "tools/list":
+        result = handle_tools_list(data.get("params", {}))
+    elif method == "tools/call":
+        result = handle_tools_call(data.get("params", {}))
+    return jsonify({"jsonrpc": "2.0", "id": data.get("id"), "result": result})
+
+def initialize_image_manager():
+    global image_manager
+    image_manager = ImageManager(working_dir="/tmp", s3_bucket=os.environ.get("S3_BUCKET"), enable_s3=True)
+
+initialize_image_manager()

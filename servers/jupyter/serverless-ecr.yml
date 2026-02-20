@@ -1,0 +1,92 @@
+# Serverless Framework configuration for Lambda deployment
+# Uses pre-pushed ECR image (for environments where Docker requires sudo)
+# Deploy with: serverless deploy -c serverless-ecr.yml
+
+service: jupyter-mcp-lambda
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+
+functions:
+  jupyterMcpServer:
+    name: jupyter-mcp-server-${sls:stage}
+    # Use pre-pushed ECR image
+    image: ${env:AWS_ACCOUNT_ID}.dkr.ecr.${self:provider.region}.amazonaws.com/jupyter-mcp-lambda-${sls:stage}:latest
+
+    # Lambda configuration
+    timeout: 900  # 15 minutes (max)
+    memorySize: 2048  # 2GB (can increase up to 10GB)
+    ephemeralStorageSize: 1024  # 1GB temp storage
+
+    # Architecture (x86_64 or arm64)
+    architecture: x86_64
+
+    # Environment variables
+    environment:
+      PYTHONUNBUFFERED: '1'
+      JUPYTER_WORKING_DIR: /tmp/notebooks
+      LOG_LEVEL: INFO
+
+    # API Gateway HTTP API (v2) - simpler and cheaper than REST API
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+      - httpApi:
+          path: /
+          method: ANY
+
+    # Optional: Provisioned concurrency (keeps 1 instance warm)
+    # Uncomment to eliminate cold starts (costs ~$6/month)
+    # provisionedConcurrency: 1
+
+    # Optional: Reserved concurrent executions (limit max instances)
+    # reservedConcurrency: 10
+
+# Optional: CloudWatch Log retention
+resources:
+  Resources:
+    # Set log retention to 7 days (default is forever)
+    JupyterMcpServerLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: /aws/lambda/jupyter-mcp-server-${sls:stage}
+        RetentionInDays: 7
+
+    # Optional: CloudWatch alarm for errors
+    JupyterMcpErrorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: jupyter-mcp-errors-${sls:stage}
+        AlarmDescription: Alert on Lambda errors
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Statistic: Sum
+        Period: 300
+        EvaluationPeriods: 1
+        Threshold: 5
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - Name: FunctionName
+            Value: !Ref JupyterMcpServerLambdaFunction
+
+  Outputs:
+    ApiEndpoint:
+      Description: "API Gateway endpoint URL"
+      Value:
+        Fn::Sub: "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+    MCPEndpoint:
+      Description: "MCP protocol endpoint"
+      Value:
+        Fn::Sub: "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/mcp"
+
+    FunctionArn:
+      Description: "Lambda function ARN"
+      Value:
+        Fn::GetAtt: [JupyterMcpServerLambdaFunction, Arn]
+
+# Serverless v4+ has prune functionality built-in
+# No plugins needed - prune is automatic
