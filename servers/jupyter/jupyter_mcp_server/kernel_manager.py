@@ -45,10 +45,15 @@ class JupyterKernelManager:
         self._initialize_kernel()
 
     def _initialize_kernel(self):
-        """Initialize the Jupyter kernel"""
+        """Initialize the Jupyter kernel with sanitized environment"""
         try:
+            # SECURITY: Create sanitized environment without AWS credentials
+            # This prevents user code from accessing Lambda execution role credentials
+            sanitized_env = self._sanitize_environment()
+
             self.km = KernelManager(kernel_name="python3")
-            self.km.start_kernel(cwd=self.working_dir)
+            # Pass sanitized environment to kernel
+            self.km.start_kernel(cwd=self.working_dir, env=sanitized_env)
             self.kc = self.km.client()
             self.kc.start_channels()
             self.kc.wait_for_ready(timeout=30)
@@ -58,6 +63,45 @@ class JupyterKernelManager:
         except Exception as e:
             print(f"Failed to start kernel: {e}")
             raise
+
+    def _sanitize_environment(self):
+        """Remove sensitive AWS credentials from environment
+
+        SECURITY: Prevents user code from accessing Lambda execution role credentials.
+        Users should not be able to use the Lambda's AWS credentials to access resources.
+        """
+        # List of sensitive environment variables to remove
+        sensitive_keys = [
+            'AWS_ACCESS_KEY_ID',
+            'AWS_SECRET_ACCESS_KEY',
+            'AWS_SESSION_TOKEN',
+            'AWS_SECURITY_TOKEN',
+            # Also remove other potentially sensitive Lambda metadata
+            'AWS_LAMBDA_FUNCTION_NAME',
+            'AWS_LAMBDA_FUNCTION_VERSION',
+            'AWS_LAMBDA_LOG_GROUP_NAME',
+            'AWS_LAMBDA_LOG_STREAM_NAME',
+            'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
+            '_AWS_XRAY_DAEMON_ADDRESS',
+            '_AWS_XRAY_DAEMON_PORT',
+        ]
+
+        # Create copy of environment without sensitive keys
+        sanitized = {k: v for k, v in os.environ.items() if k not in sensitive_keys}
+
+        # Keep essential environment variables for Python/Jupyter
+        essential_vars = {
+            'PATH': os.environ.get('PATH', '/usr/local/bin:/usr/bin:/bin'),
+            'HOME': os.environ.get('HOME', '/tmp'),
+            'LANG': os.environ.get('LANG', 'en_US.UTF-8'),
+            'PYTHONPATH': os.environ.get('PYTHONPATH', ''),
+            'MPLBACKEND': os.environ.get('MPLBACKEND', 'Agg'),
+        }
+
+        sanitized.update(essential_vars)
+
+        print(f"SECURITY: Sanitized environment - removed {len(sensitive_keys)} sensitive variables")
+        return sanitized
 
     def _setup_matplotlib_inline(self):
         """Configure matplotlib for inline display with PNG output"""

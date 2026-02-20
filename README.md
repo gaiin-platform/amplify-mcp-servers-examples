@@ -452,6 +452,17 @@ aws ecr create-repository --repository-name nodejs-execution-mcp-server --region
 
 **Description**: Interactive Python notebook execution with Jupyter kernel management, matplotlib plotting, and package installation.
 
+#### 🚨 CRITICAL SECURITY NOTE
+
+**AWS Credentials Exposure Issue (FIXED)**: Lambda functions receive AWS credentials via environment variables. Without protection, user code executing `os.environ` could access:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
+
+**Fix Applied**: The kernel manager now **strips AWS credentials and sensitive Lambda metadata** from the environment before starting the Jupyter kernel. User code cannot access Lambda execution role credentials.
+
+**Production Requirements**: This example still needs extensive hardening including user authentication, per-user kernel isolation, resource limits, code sandboxing, audit logging, and network restrictions. See `servers/jupyter/README.md` for detailed security considerations.
+
 #### Tools
 
 | Tool | Parameters | Description |

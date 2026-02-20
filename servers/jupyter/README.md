@@ -2,6 +2,38 @@
 
 A Model Context Protocol (MCP) server that provides Jupyter kernel capabilities for LLM interactions.
 
+---
+
+## 🚨 CRITICAL SECURITY WARNING
+
+**This is an example template with known security considerations:**
+
+### Security Issue: AWS Credentials Exposure (FIXED)
+
+**Problem**: Lambda execution roles provide AWS credentials via environment variables. If user code can access `os.environ`, they could see:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
+
+**Fix Applied**: The kernel manager now **strips AWS credentials** from the environment before starting the Jupyter kernel. User code cannot access Lambda execution role credentials.
+
+### Additional Production Requirements
+
+Before production deployment, you MUST add:
+
+- **User Authentication**: Verify who is executing code
+- **User Isolation**: Separate kernels per user, not shared
+- **Resource Limits**: CPU, memory, execution time limits per user
+- **Code Sandboxing**: Additional isolation beyond environment sanitization
+- **Audit Logging**: Track all code execution with user attribution
+- **Network Restrictions**: Limit outbound network access from kernel
+- **Package Installation Controls**: Whitelist/blacklist pip packages
+- **File System Restrictions**: Limit file access to user-specific directories
+
+**This example is for demonstration only.** Production use requires extensive hardening.
+
+---
+
 ## Features
 
 - Execute Python code with rich outputs (text, images, plots)
