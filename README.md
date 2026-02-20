@@ -2,6 +2,53 @@
 
 This repository contains example Model Context Protocol (MCP) servers designed to be deployed as AWS Lambda functions and integrated with Amplify applications. These servers provide LLMs with powerful capabilities like data transformation, image processing, code execution, and Jupyter notebook interaction.
 
+---
+
+## ⚠️ IMPORTANT: Example Templates
+
+**These are demonstration examples and starting templates only.** They provide a foundation for building MCP servers but are intentionally kept simple for educational purposes.
+
+### 🚀 Extend and Customize
+
+You can (and should!) enhance these examples based on your requirements:
+
+- **🔐 Security Enhancements**:
+  - Add user authentication and authorization
+  - Implement API key validation
+  - Add rate limiting and throttling
+  - Enable VPC isolation for sensitive data
+  - Implement request signing and verification
+  - Add WAF rules for additional protection
+
+- **💾 User-Specific Storage**:
+  - Implement per-user S3 prefixes/buckets
+  - Add user session management
+  - Store user preferences and settings
+  - Implement workspace isolation
+  - Add multi-tenancy support
+  - Enable user data encryption at rest
+
+- **🎨 Custom Features**:
+  - Add your own domain-specific tools
+  - Integrate with your existing APIs
+  - Connect to your databases (RDS, DynamoDB, etc.)
+  - Add caching layers (ElastiCache, CloudFront)
+  - Implement custom logging and metrics
+  - Add business logic specific to your use case
+  - Integrate with third-party services (Stripe, Twilio, etc.)
+
+- **📊 Advanced Capabilities**:
+  - Add queue-based processing (SQS)
+  - Implement async workflows (Step Functions)
+  - Add streaming responses
+  - Enable WebSocket support
+  - Implement batch processing
+  - Add data validation and transformation pipelines
+
+**Go crazy!** These examples are fully extensible. Use them as blueprints to build production-grade MCP servers tailored to your specific needs. The architecture supports any enhancement you can imagine.
+
+---
+
 ## 📦 Available MCP Servers
 
 | Server | Description | Tools Provided | Status |
@@ -1279,13 +1326,25 @@ For issues and questions:
 
 ## 🎯 Summary
 
-This repository provides production-ready MCP servers for Amplify integration:
+This repository provides **example MCP server templates** for Amplify integration:
 
-✅ **4 Complete Servers**: Data Transformation, Image Processing, Node.js Execution, Jupyter
-✅ **AWS Lambda Deployment**: Containerized, scalable, serverless
+✅ **4 Complete Example Servers**: Data Transformation, Image Processing, Node.js Execution, Jupyter
+✅ **AWS Lambda Deployment**: Containerized, scalable, serverless architecture
 ✅ **S3 Integration**: Large file handling with presigned URLs
-✅ **Comprehensive Documentation**: Deployment, usage, troubleshooting
-✅ **Security Best Practices**: IAM roles, input validation, sandboxing
-✅ **Production Tested**: Handles edge cases, errors, and performance optimization
+✅ **Comprehensive Documentation**: Deployment, usage, troubleshooting, customization ideas
+✅ **Extensible Foundation**: Add authentication, user isolation, custom features, and more
+✅ **Production-Ready Architecture**: Handles edge cases, errors, and performance optimization
 
-**Quick Start**: Pick a server, run `./deploy-lambda-ecr.sh`, get the Function URL, add to Amplify DynamoDB config, and start using powerful LLM tools!
+**Remember**: These are starting templates! Extend them with your own security layers, user-specific storage, custom business logic, and production features to meet your specific requirements.
+
+**Quick Start**: Pick a server, run `./deploy-lambda-ecr.sh`, get the Function URL, add to Amplify DynamoDB config, customize as needed, and start using powerful LLM tools!
+
+---
+
+## 📄 License & Disclaimer
+
+**License**: MIT License - See individual server directories for specific licensing information.
+
+**Disclaimer**: These MCP servers are provided as educational examples and starting templates. They are functional demonstrations but not hardened for production use without additional security, monitoring, and customization. Users are responsible for implementing appropriate security measures, compliance requirements, and production best practices before deploying to production environments.
+
+**Use at your own risk**: Always review, test, and secure the code according to your organization's requirements and industry standards before deploying to production.

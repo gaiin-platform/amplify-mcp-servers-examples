@@ -2,6 +2,24 @@
 
 This guide walks you through deploying all MCP servers to AWS Lambda for Amplify integration.
 
+## ⚠️ IMPORTANT: Example Templates for Demonstration
+
+**These MCP servers are example implementations** designed to demonstrate how to build and deploy MCP servers for Amplify. They are fully functional but intentionally simplified for learning purposes.
+
+### Production Considerations
+
+Before deploying to production, consider enhancing these examples with:
+
+- **Security**: Add authentication, authorization, API keys, rate limiting
+- **User Isolation**: Implement per-user storage, workspace separation, data encryption
+- **Custom Features**: Add your domain-specific logic, integrate with your systems
+- **Monitoring**: Enhanced CloudWatch metrics, alerting, distributed tracing
+- **Compliance**: Add audit logging, data retention policies, regulatory compliance features
+
+**These examples are your starting point** - extend and customize them to meet your production requirements. The architecture is designed to be flexible and scalable.
+
+---
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)

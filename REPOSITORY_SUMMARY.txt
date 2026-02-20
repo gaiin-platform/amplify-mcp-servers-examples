@@ -6,6 +6,12 @@ Repository: amplify-mcp-servers-examples
 Remote: git@github.com:gaiin-platform/amplify-mcp-servers-examples.git
 Status: All files organized and ready for your commit
 
+⚠️  IMPORTANT NOTICE ADDED:
+All documentation files now clearly state that these are EXAMPLE TEMPLATES
+for demonstration purposes. Users are encouraged to extend them with custom
+security, user-specific storage, and production features. The examples are
+intentionally kept simple as starting points that can be customized extensively.
+
 ================================================================================
 WHAT'S INCLUDED
 ================================================================================
