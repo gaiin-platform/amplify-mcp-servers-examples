@@ -45,6 +45,44 @@ class ExecutionManager:
             with open(package_json_path, 'w') as f:
                 json.dump(package_json, f, indent=2)
 
+    def _sanitize_environment(self):
+        """Remove sensitive AWS credentials from environment
+
+        SECURITY: Prevents user code from accessing Lambda execution role credentials.
+        Users should not be able to use the Lambda's AWS credentials to access resources.
+        """
+        # List of sensitive environment variables to remove
+        sensitive_keys = [
+            'AWS_ACCESS_KEY_ID',
+            'AWS_SECRET_ACCESS_KEY',
+            'AWS_SESSION_TOKEN',
+            'AWS_SECURITY_TOKEN',
+            # Also remove other potentially sensitive Lambda metadata
+            'AWS_LAMBDA_FUNCTION_NAME',
+            'AWS_LAMBDA_FUNCTION_VERSION',
+            'AWS_LAMBDA_LOG_GROUP_NAME',
+            'AWS_LAMBDA_LOG_STREAM_NAME',
+            'AWS_LAMBDA_FUNCTION_MEMORY_SIZE',
+            '_AWS_XRAY_DAEMON_ADDRESS',
+            '_AWS_XRAY_DAEMON_PORT',
+        ]
+
+        # Create copy of environment without sensitive keys
+        sanitized = {k: v for k, v in os.environ.items() if k not in sensitive_keys}
+
+        # Keep essential environment variables for Node.js
+        essential_vars = {
+            'PATH': os.environ.get('PATH', '/usr/local/bin:/usr/bin:/bin'),
+            'HOME': os.environ.get('HOME', '/tmp'),
+            'LANG': os.environ.get('LANG', 'en_US.UTF-8'),
+            'NODE_PATH': os.environ.get('NODE_PATH', ''),
+        }
+
+        sanitized.update(essential_vars)
+
+        print(f"SECURITY: Sanitized environment - removed {len(sensitive_keys)} sensitive variables")
+        return sanitized
+
     def _upload_to_s3(self, local_path: str, filename: str) -> Optional[Dict]:
         """Upload file to S3 and return pre-signed URL"""
         if not self.enable_s3:
@@ -76,13 +114,16 @@ class ExecutionManager:
             with open(code_file, 'w') as f:
                 f.write(code)
 
-            # Execute with Node.js
+            # SECURITY: Execute with Node.js using sanitized environment
+            # This prevents user code from accessing Lambda execution role credentials
+            sanitized_env = self._sanitize_environment()
             result = subprocess.run(
                 ['node', 'script.js'],
                 cwd=self.workspace_path,
                 capture_output=True,
                 text=True,
-                timeout=timeout
+                timeout=timeout,
+                env=sanitized_env
             )
 
             stdout = result.stdout
@@ -113,13 +154,16 @@ class ExecutionManager:
             with open(code_file, 'w') as f:
                 f.write(code)
 
-            # Execute with ts-node
+            # SECURITY: Execute with ts-node using sanitized environment
+            # This prevents user code from accessing Lambda execution role credentials
+            sanitized_env = self._sanitize_environment()
             result = subprocess.run(
                 ['ts-node', 'script.ts'],
                 cwd=self.workspace_path,
                 capture_output=True,
                 text=True,
-                timeout=timeout
+                timeout=timeout,
+                env=sanitized_env
             )
 
             stdout = result.stdout

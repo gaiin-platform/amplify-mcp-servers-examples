@@ -2,6 +2,12 @@
 
 A Model Context Protocol (MCP) server for executing Node.js and TypeScript code with npm package support.
 
+## 🔒 Security Notice
+
+**CRITICAL SECURITY FIX APPLIED**: This server now sanitizes the execution environment to prevent user code from accessing AWS Lambda execution role credentials. User-executed JavaScript/TypeScript code cannot access `process.env.AWS_ACCESS_KEY_ID`, `process.env.AWS_SECRET_ACCESS_KEY`, or other sensitive AWS credentials.
+
+**What was fixed**: Previously, user code had access to the full Lambda environment including AWS credentials through `process.env`. The execution environment is now sanitized before running user code, removing all AWS credentials and sensitive Lambda metadata while preserving essential variables (PATH, HOME, LANG, NODE_PATH) needed for Node.js execution.
+
 ## Features
 
 - **Execute JavaScript**: Run Node.js code with full ES6+ support

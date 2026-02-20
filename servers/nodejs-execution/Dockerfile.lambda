@@ -1,0 +1,34 @@
+# Dockerfile for AWS Lambda deployment  
+FROM public.ecr.aws/lambda/python:3.11
+
+# Install Node.js and npm (Node.js 16 is compatible with Amazon Linux 2's glibc 2.26)
+RUN yum install -y gcc gcc-c++ make git && \
+    curl -fsSL https://rpm.nodesource.com/setup_16.x | bash - && \
+    yum install -y nodejs
+
+# Set Lambda task root
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Copy project files
+COPY pyproject.toml ${LAMBDA_TASK_ROOT}/
+COPY README.md ${LAMBDA_TASK_ROOT}/
+COPY nodejs_mcp_server/ ${LAMBDA_TASK_ROOT}/nodejs_mcp_server/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir ${LAMBDA_TASK_ROOT}/
+
+# Install global Node.js tools
+RUN npm install -g typescript ts-node
+
+# Install PyJWT and boto3
+RUN pip install --no-cache-dir pyjwt==2.8.0 boto3==1.34.34
+
+# Copy Lambda handler
+COPY lambda_handler.py ${LAMBDA_TASK_ROOT}/
+
+# Set working directory for Node.js execution
+ENV NODEJS_WORKING_DIR=/tmp/nodejs-workspace
+RUN mkdir -p ${NODEJS_WORKING_DIR}
+
+CMD ["lambda_handler.handler"]

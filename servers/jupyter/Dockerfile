@@ -15,6 +15,7 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml /app/
+COPY README.md /app/
 COPY jupyter_mcp_server /app/jupyter_mcp_server/
 
 # Install Python dependencies
